@@ -1,10 +1,14 @@
 <?php
+/**
+ * Scan e carga para banco SQL, dos XMLs dispostos em filesystem. Ver scripts "ini.sql".
+ */
 
+// // // //
+// CONFIGURACOES:
+$PG_USER = 'postgres';
+$PG_PW   = 'pp@123456'; 
 $pasta =  '/home/peter/Área de Trabalho/hackday/xml-scielo';
 
-$n = 0;
-$PG_USER = 'postgres';
-$PG_PW   = 'pp@123456';
 
 $n=0;
 $dsn="pgsql:dbname=postgres;host=localhost";
@@ -12,7 +16,12 @@ $db = new pdo($dsn,$PG_USER,$PG_PW);
 
 $XHEAD = ''; // $XHEAD = '<?xml version="1.0" encoding="UTF-8"  >'."\n";
 $rgx_doctype = '/^\s*<!DOCTYPE\s([^>]+)>/s';
-$stmt = $db->prepare("INSERT INTO artigo(pid,content_dtd,conteudo) VALUES (:pid,:doctype,:conteudo)");
+
+// INSERT de teste com as ~2mil amostras do SciELO-BR 
+$stmt = $db->prepare(
+  "INSERT INTO articles(repo,repos_pid,content_dtd,xcontent) VALUES (1,:pid,:doctype,:conteudo)"
+);
+
 foreach (scandir($pasta) as $file) if (strlen($file)>5) { //  && $n<10 
 	$n++;
 	print "\n -- $file";
@@ -33,7 +42,7 @@ foreach (scandir($pasta) as $file) if (strlen($file)>5) { //  && $n<10
 	if (!$re) print "\n-- ERROR at $file, not saved";
 }
 
-print "\n$n arquivos inseridos \n";
+print "\n$n arquivos inseridos \n falra rodar SELECT articles_kx_refresh();\n";
 
 /*
 $stmt = $dbh->prepare("SELECT * FROM REGISTRY where name = ?");
